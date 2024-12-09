@@ -1,8 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html class="light">
 <head>
-    <title>Predict Trend</title>
+    <title>Monitoring Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            bg: '#1a1a1a',
+                            card: '#2d2d2d'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         .section {
             max-width: 1200px;
@@ -35,45 +52,232 @@
         }
     </style>
 </head>
-<body>
-    <div class="section">
-        <h2>DP1 Trend</h2>
-        <div class="main-chart-wrapper">
-            <canvas id="dp1MainChart"></canvas>
+<body class="bg-gray-50 dark:bg-dark-bg transition-colors duration-200">
+    <!-- Modal -->
+    <div id="equipmentModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-dark-card rounded-lg p-6 max-w-2xl w-full mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-200" id="modalTitle">Equipment Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 dark:text-gray-400">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalContent" class="space-y-4">
+                <!-- Modal content will be inserted here -->
+            </div>
         </div>
-        <h3>DP1 Min, Low Trend</h3>
-        <div class="subplots-container" id="dp1Container"></div>
     </div>
-    
-    <div class="section">
-        <h2>FS Trend</h2>
-        <div class="main-chart-wrapper">
-            <canvas id="fsMainChart"></canvas>
-        </div>
-        <h3>FS Min, Low Trend</h3>
-        <div class="subplots-container" id="fsContainer"></div>
-    </div>
+        <!-- Sidebar -->
+        <aside class="fixed left-0 top-0 w-64 h-full bg-white dark:bg-dark-card shadow-lg transition-colors duration-200">
+            <div class="flex items-center justify-center h-16 border-b dark:border-gray-700 p-2">
+                <img src="1.png" alt="Anaom Logo" class="h-10 object-contain">
+            </div>
+            <nav class="mt-6">
+                <div class="px-4 py-2">
+                    <h2 class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Options</h2>
+                    <div class="mt-3 space-y-2">
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                            <i class="fas fa-chart-line mr-3"></i>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="#" class="flex items-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <i class="fas fa-cog mr-3"></i>
+                            <span>Settings</span>
+                        </a>
+                    </div>
+                </div>
+            </nav>
+                    <!-- Dark Mode Toggle -->
+            <div class="absolute bottom-4 left-0 right-0 px-4">
+                <button onclick="toggleDarkMode()" class="w-full flex items-center justify-center px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                    <i class="fas fa-moon mr-2 dark:hidden"></i>
+                    <i class="fas fa-sun mr-2 hidden dark:inline"></i>
+                    <span class="dark:hidden">Dark Mode</span>
+                    <span class="hidden dark:inline">Light Mode</span>
+                </button>
+            </div>
+        </aside>
 
+    <!-- Main Content -->
+    <main class="ml-64 p-8">
+        <!-- Header -->
+        <header class="bg-white shadow-sm rounded-lg p-4 mb-6">
+            <h2 class="text-2xl font-semibold text-gray-800">AI 예측 트랜드 분석</h2>
+        </header>
+
+        <!-- Charts Grid -->
+        <div class="grid grid-cols-1 gap-6">
+            <!-- DP1 Section -->
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">DP1 Trend</h2>
+                <div class="h-96 mb-6">
+                    <canvas id="dp1MainChart"></canvas>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">DP1 Equipment Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="dp1Container"></div>
+            </section>
+
+            <!-- FS Section -->
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">FS Trend</h2>
+                <div class="h-96 mb-6">
+                    <canvas id="fsMainChart"></canvas>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">FS Equipment Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="fsContainer"></div>
+            </section>
+
+            <!-- Power Section -->
+            <section class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Power Trend</h2>
+                <div class="h-96 mb-6">
+                    <canvas id="powerMainChart"></canvas>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">Power Equipment Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="powerContainer"></div>
+            </section>
+        </div>
+    </main>
 <script>
 // 기본 데이터 설정
-const equipments = ['EQP0000038', 'EQP0000020', 'EQP0000039', 'EQP0000019', 'EQP0000036', 'EQP0000037'];
+const equipments = [
+    'EQP0000038', 'EQP0000020', 'EQP0000039', 'EQP0000019', 
+    'EQP0000036', 'EQP0000037', 'EQP0000050', 'EQP0000051', 
+    'EQP0000052', 'EQP0000053'
+];
 const colors = [
     { border: 'rgb(75, 192, 192)', background: 'rgba(75, 192, 192, 0.2)' },
     { border: 'rgb(255, 99, 132)', background: 'rgba(255, 99, 132, 0.2)' },
     { border: 'rgb(255, 159, 64)', background: 'rgba(255, 159, 64, 0.2)' },
     { border: 'rgb(153, 102, 255)', background: 'rgba(153, 102, 255, 0.2)' },
     { border: 'rgb(54, 162, 235)', background: 'rgba(54, 162, 235, 0.2)' },
-    { border: 'rgb(255, 205, 86)', background: 'rgba(255, 205, 86, 0.2)' }
+    { border: 'rgb(255, 205, 86)', background: 'rgba(255, 205, 86, 0.2)' },
+    { border: 'rgb(201, 203, 207)', background: 'rgba(201, 203, 207, 0.2)' },
+    { border: 'rgb(255, 0, 255)', background: 'rgba(255, 0, 255, 0.2)' },
+    { border: 'rgb(0, 255, 0)', background: 'rgba(0, 255, 0, 0.2)' },
+    { border: 'rgb(128, 0, 0)', background: 'rgba(128, 0, 0, 0.2)' }
 ];
 
 const initialData = {
-    'EQP0000038': { dp1_trend: 223.76, dp1_min: 212.30, dp1_max: 242.11, fs_trend: 17.37, fs_min: 16.61, fs_max: 17.98, volatility: 1.2 },
-    'EQP0000020': { dp1_trend: 18.45, dp1_min: 0.00, dp1_max: 21.96, fs_trend: 1.42, fs_min: 0.00, fs_max: 1.54, volatility: 0.8 },
-    'EQP0000039': { dp1_trend: 260.00, dp1_min: 249.62, dp1_max: 273.24, fs_trend: 5.96, fs_min: 5.69, fs_max: 6.16, volatility: 1.5 },
-    'EQP0000019': { dp1_trend: 40.55, dp1_min: 0.00, dp1_max: 43.87, fs_trend: 1.25, fs_min: 0.00, fs_max: 1.34, volatility: 0.9 },
-    'EQP0000036': { dp1_trend: 153.83, dp1_min: 124.61, dp1_max: 202.16, fs_trend: 5.10, fs_min: 4.82, fs_max: 5.50, volatility: 2.0 },
-    'EQP0000037': { dp1_trend: 49.60, dp1_min: 33.03, dp1_max: 64.26, fs_trend: 5.85, fs_min: 5.02, fs_max: 6.09, volatility: 1.3 }
+    'EQP0000038': { 
+        dp1_trend: 223.76, dp1_min: 212.30, dp1_max: 242.11, 
+        fs_trend: 17.37, fs_min: 16.61, fs_max: 17.98,
+        power_trend: 24876.92, power_min: 20834.44, power_max: 28121.77,
+        volatility: 1.2 
+    },
+    'EQP0000020': { 
+        dp1_trend: 18.45, dp1_min: 0.00, dp1_max: 21.96, 
+        fs_trend: 1.42, fs_min: 0.00, fs_max: 1.54,
+        power_trend: 411.63, power_min: 0.00, power_max: 418.63,
+        volatility: 0.8 
+    },
+    'EQP0000039': { 
+        dp1_trend: 260.00, dp1_min: 249.62, dp1_max: 273.24, 
+        fs_trend: 5.96, fs_min: 5.69, fs_max: 6.16,
+        power_trend: 0.00, power_min: 0.00, power_max: 0.00,
+        volatility: 1.5 
+    },
+    'EQP0000019': { 
+        dp1_trend: 40.55, dp1_min: 0.00, dp1_max: 43.87, 
+        fs_trend: 1.25, fs_min: 0.00, fs_max: 1.34,
+        power_trend: 566.34, power_min: 0.00, power_max: 576.52,
+        volatility: 0.9 
+    },
+    'EQP0000036': { 
+        dp1_trend: 153.83, dp1_min: 124.61, dp1_max: 202.16, 
+        fs_trend: 5.10, fs_min: 4.82, fs_max: 5.50,
+        power_trend: 440.93, power_min: 417.24, power_max: 457.73,
+        volatility: 2.0 
+    },
+    'EQP0000037': { 
+        dp1_trend: 49.60, dp1_min: 33.03, dp1_max: 64.26, 
+        fs_trend: 5.85, fs_min: 5.02, fs_max: 6.09,
+        power_trend: 271.54, power_min: 194.67, power_max: 348.19,
+        volatility: 1.3 
+    },
+    'EQP0000050': { 
+        dp1_trend: 200.08, dp1_min: 191.55, dp1_max: 209.81, 
+        fs_trend: 4.38, fs_min: 4.06, fs_max: 4.63,
+        power_trend: 4131.68, power_min: 3188.23, power_max: 4684.48,
+        volatility: 1.1 
+    },
+    'EQP0000051': { 
+        dp1_trend: 90.62, dp1_min: 15.41, dp1_max: 176.05, 
+        fs_trend: 1.59, fs_min: 1.44, fs_max: 1.79,
+        power_trend: 492.62, power_min: 0.00, power_max: 2482.63,
+        volatility: 1.8 
+    },
+    'EQP0000052': { 
+        dp1_trend: 41.84, dp1_min: 0.22, dp1_max: 44.07, 
+        fs_trend: 5.67, fs_min: 0.40, fs_max: 5.97,
+        power_trend: 3765.91, power_min: 0.00, power_max: 3975.18,
+        volatility: 1.0 
+    },
+    'EQP0000053': { 
+        dp1_trend: 7.05, dp1_min: 0.00, dp1_max: 23.42, 
+        fs_trend: 5.88, fs_min: 0.10, fs_max: 6.05,
+        power_trend: 50.82, power_min: 8.62, power_max: 69.03,
+        volatility: 1.4 
+    }
 };
+function toggleDarkMode() {
+    document.documentElement.classList.toggle('dark');
+    updateChartStyles();
+}
+// 모달 관련 함수들
+function openModal(equip) {
+    const modal = document.getElementById('equipmentModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalContent = document.getElementById('modalContent');
+    
+    modalTitle.textContent = `Equipment Details - ${equip}`;
+    
+    // 장비 데이터 가져오기
+    const data = initialData[equip];
+    
+    // 모달 내용 생성
+    modalContent.innerHTML = `
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">DP1 Values</h4>
+                <p class="text-gray-600 dark:text-gray-400">Trend: ${data.dp1_trend.toFixed(2)}</p>
+                <p class="text-gray-600 dark:text-gray-400">Min: ${data.dp1_min.toFixed(2)}</p>
+                <p class="text-gray-600 dark:text-gray-400">Max: ${data.dp1_max.toFixed(2)}</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">FS Values</h4>
+                <p class="text-gray-600 dark:text-gray-400">Trend: ${data.fs_trend.toFixed(2)}</p>
+                <p class="text-gray-600 dark:text-gray-400">Min: ${data.fs_min.toFixed(2)}</p>
+                <p class="text-gray-600 dark:text-gray-400">Max: ${data.fs_max.toFixed(2)}</p>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg col-span-2">
+                <h4 class="font-semibold text-gray-700 dark:text-gray-300 mb-2">Power Values</h4>
+                <p class="text-gray-600 dark:text-gray-400">Trend: ${data.power_trend.toFixed(2)}</p>
+                <p class="text-gray-600 dark:text-gray-400">Min: ${data.power_min.toFixed(2)}</p>
+                <p class="text-gray-600 dark:text-gray-400">Max: ${data.power_max.toFixed(2)}</p>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+}
+
+function closeModal() {
+    document.getElementById('equipmentModal').classList.add('hidden');
+}
+
+// Chart.js 스타일 업데이트 함수
+function updateChartStyles() {
+    const isDark = document.documentElement.classList.contains('dark');
+    Chart.defaults.color = isDark ? '#9ca3af' : '#64748b';
+    
+    // 모든 차트 업데이트
+    Chart.instances.forEach(chart => {
+        chart.options.scales.y.grid.color = isDark ? '#374151' : '#e2e8f0';
+        chart.options.scales.x.grid.color = isDark ? '#374151' : '#e2e8f0';
+        chart.update();
+    });
+}
 
 // 날짜 배열 생성
 const dates = [];
@@ -89,7 +293,16 @@ for (let month = 1; month <= 1; month++) {
 }
 
 // 데이터 생성 함수
-function generateData(baseValue, minValue, maxValue, volatility, length) {
+function generateData(equip, baseValue, minValue, maxValue, volatility, length, type) {
+    // EQP0000039의 power 데이터는 항상 0으로 고정
+    if (equip === 'EQP0000039' && type === 'power') {
+        return {
+            data: Array(length).fill(0),
+            minData: Array(length).fill(0),
+            maxData: Array(length).fill(0)
+        };
+    }
+    
     let value = baseValue;
     const data = [];
     const minData = [];
@@ -105,7 +318,6 @@ function generateData(baseValue, minValue, maxValue, volatility, length) {
     
     return { data, minData, maxData };
 }
-
 // 전체 Y축 범위 계산
 function getGlobalYRange(type) {
     const allValues = [];
@@ -128,11 +340,13 @@ function createMainChart(type) {
     const yRange = getGlobalYRange(type);
     const datasets = equipments.map((equip, index) => {
         const data = generateData(
+            equip,
             initialData[equip][`${type}_trend`],
             initialData[equip][`${type}_min`],
             initialData[equip][`${type}_max`],
-            initialData[equip].volatility * (type === 'dp1' ? 2 : 0.1),
-            dates.length
+            initialData[equip].volatility * (type === 'dp1' ? 2 : type === 'fs' ? 0.1 : 5),
+            dates.length,
+            type
         );
         
         return {
@@ -148,16 +362,16 @@ function createMainChart(type) {
         type: 'line',
         data: { labels: dates, datasets },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            ...chartOptions,
             plugins: {
-                title: { display: true, text: `${type.toUpperCase()} Overview` }
-            },
-            scales: {
-                y: {
-                    // min: yRange.min,
-                    // max: yRange.max,
-                    type: 'linear'
+                ...chartOptions.plugins,
+                title: {
+                    display: true,
+                    text: `${type.toUpperCase()} Overview`,
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
                 }
             }
         }
@@ -167,20 +381,21 @@ function createMainChart(type) {
 // 서브플롯 생성
 function createSubplot(equip, type, index) {
     const wrapper = document.createElement('div');
-    wrapper.className = 'chart-wrapper';
+    wrapper.className = 'bg-white dark:bg-dark-card rounded-lg shadow-sm p-4 h-[300px] cursor-pointer transition-transform hover:scale-105';
+    wrapper.onclick = () => openModal(equip);
     const canvas = document.createElement('canvas');
     wrapper.appendChild(canvas);
     document.getElementById(`${type}Container`).appendChild(wrapper);
 
     const data = generateData(
+        equip,
         initialData[equip][`${type}_trend`],
         initialData[equip][`${type}_min`],
         initialData[equip][`${type}_max`],
-        initialData[equip].volatility * (type === 'dp1' ? 2 : 0.1),
-        dates.length
+        initialData[equip].volatility * (type === 'dp1' ? 2 : type === 'fs' ? 0.1 : 5),
+        dates.length,
+        type
     );
-
-    const yRange = getGlobalYRange(type);
 
     return new Chart(canvas, {
         type: 'line',
@@ -216,22 +431,65 @@ function createSubplot(equip, type, index) {
             },
             scales: {
                 y: {
-                    // min: yRange.min,
-                    // max: yRange.max
                     type: 'linear'
                 }
             }
         }
     });
 }
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'top',
+            labels: {
+                padding: 20,
+                font: {
+                    size: 12
+                }
+            }
+        }
+    },
+    scales: {
+        y: {
+            grid: {
+                color: '#e2e8f0'
+            }
+        },
+        x: {
+            grid: {
+                color: '#e2e8f0'
+            }
+        }
+    }
+};
+// 이벤트 리스너 추가
+window.addEventListener('load', () => {
+    // 초기 다크모드 설정
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+    }
+    
+    // 모달 외부 클릭 시 닫기
+    document.getElementById('equipmentModal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) {
+            closeModal();
+        }
+    });
+});
 
 // 차트 생성 실행
 window.onload = function() {
     createMainChart('dp1');
     createMainChart('fs');
+    createMainChart('power');
     equipments.forEach((equip, index) => {
         createSubplot(equip, 'dp1', index);
         createSubplot(equip, 'fs', index);
+        createSubplot(equip, 'power', index);
     });
 };
 </script>
